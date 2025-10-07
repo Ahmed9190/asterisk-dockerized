@@ -1,0 +1,60 @@
+# Generated certificates and keys
+certs/*.pem
+certs/*.key
+certs/*.crt
+
+# Logs
+*.log
+logs/
+asterisk-logs/
+
+# Docker volumes
+volumes/
+data/
+
+# Environment variables with secrets
+.env.local
+.env.production
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Docker-specific
+.dockerignore
+
+# Node modules (if using any JS tooling)
+node_modules/
+
+# Python cache (if using any Python scripts)
+__pycache__/
+*.pyc
+*.pyo
+
+# Config backups
+configs/*.backup
+configs/*.bak
+
+# Don't commit sample configs with sensitive data
+configs/*_production.conf
+
+# Coturn database
+coturn/turndb
+
+# Monitoring data
+prometheus/data/
+grafana/data/

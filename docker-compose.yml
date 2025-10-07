@@ -1,0 +1,87 @@
+name: asterisk-dev
+
+services:
+  #===========================================================================
+  # Asterisk PBX
+  #===========================================================================
+  asterisk:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: asterisk-server
+    restart: unless-stopped
+    ports:
+      # SIP - UDP/TCP/TLS
+      - "5060:5060/udp"
+      - "5060:5060/tcp"
+      - "5061:5061/tcp"
+      # WebRTC - HTTP/HTTPS
+      - "8088:8088/tcp"
+      - "8089:8089/tcp"
+      # RTP/RTCP
+      - "10000-10200:10000-10200/udp"
+    volumes:
+      - ./configs:/etc/asterisk
+      - ./certs:/etc/asterisk/keys
+      - asterisk-logs:/var/log/asterisk
+      - asterisk-spool:/var/spool/asterisk
+    environment:
+      - TZ=Africa/Kigali
+    networks:
+      asterisk-net:
+        ipv4_address: 172.20.0.10
+    depends_on:
+      coturn:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "asterisk", "-rx", "core show version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  #===========================================================================
+  # Coturn TURN/STUN Server (Official Image)
+  #===========================================================================
+  coturn:
+    image: coturn/coturn:4.7-alpine
+    container_name: coturn-server
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro
+      - ./certs:/etc/coturn/certs:ro
+      - coturn-data:/var/lib/coturn
+    environment:
+      - TZ=Africa/Kigali
+      # Automatic external IP detection
+      - DETECT_EXTERNAL_IP=yes
+      - DETECT_RELAY_IP=yes
+    command:
+      - -c
+      - /etc/coturn/turnserver.conf
+      - --log-file=stdout
+      - -v
+
+#=============================================================================
+# Volumes
+#=============================================================================
+volumes:
+  asterisk-logs:
+    driver: local
+  asterisk-spool:
+    driver: local
+  coturn-data:
+    driver: local
+
+#=============================================================================
+# Networks
+#=============================================================================
+networks:
+  asterisk-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+          gateway: 172.20.0.1
+

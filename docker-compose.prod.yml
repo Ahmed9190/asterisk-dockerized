@@ -1,0 +1,102 @@
+name: asterisk-prod
+
+services:
+  asterisk:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: asterisk-prod
+    restart: always
+    ports:
+      - "${SIP_UDP_PORT:-5060}:5060/udp"
+      - "${SIP_TCP_PORT:-5060}:5060/tcp"
+      - "${SIP_TLS_PORT:-5061}:5061/tcp"
+      - "${HTTP_PORT:-8088}:8088/tcp"
+      - "${WSS_PORT:-8089}:8089/tcp"
+      - "${RTP_START:-10000}-${RTP_END:-10200}:${RTP_START:-10000}-${RTP_END:-10200}/udp"
+    volumes:
+      - ./configs:/etc/asterisk:ro
+      - ./certs:/etc/asterisk/keys:ro
+      - asterisk-logs:/var/log/asterisk
+      - asterisk-spool:/var/spool/asterisk
+    environment:
+      - TZ=${TZ:-UTC}
+    networks:
+      asterisk-net:
+        ipv4_address: 172.20.0.10
+    depends_on:
+      - coturn
+    healthcheck:
+      test: ["CMD", "asterisk", "-rx", "core show version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '${ASTERISK_CPU_LIMIT:-2}'
+          memory: ${ASTERISK_MEM_LIMIT:-2G}
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  coturn:
+    image: coturn/coturn:4.7-alpine
+    container_name: coturn-prod
+    restart: always
+    ports:
+      - "${STUN_PORT:-3478}:3478/udp"
+      - "${STUN_PORT:-3478}:3478/tcp"
+      - "${TURNS_PORT:-5349}:5349/udp"
+      - "${TURNS_PORT:-5349}:5349/tcp"
+      - "${RELAY_START:-49152}-${RELAY_END:-49200}:${RELAY_START:-49152}-${RELAY_END:-49200}/udp"
+    volumes:
+      - ./coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro
+      - ./certs:/etc/coturn/certs:ro
+      - coturn-data:/var/lib/coturn
+    environment:
+      - TZ=${TZ:-UTC}
+    networks:
+      asterisk-net:
+        ipv4_address: 172.20.0.20
+    command:
+      - -c
+      - /etc/coturn/turnserver.conf
+      - --log-file=stdout
+      - --simple-log
+    deploy:
+      resources:
+        limits:
+          cpus: '${COTURN_CPU_LIMIT:-1}'
+          memory: ${COTURN_MEM_LIMIT:-512M}
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  asterisk-logs:
+    driver: local
+  asterisk-spool:
+    driver: local
+  coturn-data:
+    driver: local
+
+networks:
+  asterisk-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+          gateway: 172.20.0.1
+

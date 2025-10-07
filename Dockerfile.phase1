@@ -1,0 +1,6 @@
+FROM debian:13.1
+
+RUN echo "Debian Version:" && cat /etc/debian_version
+
+CMD ["echo", "Phase 1: Base Debian 13.1 loaded successfully"]
+
