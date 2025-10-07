@@ -42,7 +42,7 @@ Production-ready Asterisk 22.5.2 PBX with WebRTC support, Coturn TURN/STUN serve
 ### 1. Clone Repository
 
 ```
-git clone https://github.com/YOUR_USERNAME/asterisk-webrtc-server.git
+git clone https://github.com/Ahmed9190/asterisk-webrtc-server.git
 cd asterisk-webrtc-server
 ```
 
@@ -359,7 +359,7 @@ MIT License - See [LICENSE](LICENSE) file for details
 
 ## Support
 
-- **Issues:** [GitHub Issues](https://github.com/YOUR_USERNAME/asterisk-webrtc-server/issues)
+- **Issues:** [GitHub Issues](https://github.com/Ahmed9190/asterisk-webrtc-server/issues)
 - **Documentation:** [Asterisk Wiki](https://wiki.asterisk.org/)
 - **Community:** [Asterisk Forums](https://community.asterisk.org/)
 

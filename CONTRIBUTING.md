@@ -50,7 +50,7 @@ Thank you for considering contributing to this project!
 
 ```
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/asterisk-webrtc-server.git
+git clone https://github.com/Ahmed9190/asterisk-webrtc-server.git
 cd asterisk-webrtc-server
 
 # Create feature branch
